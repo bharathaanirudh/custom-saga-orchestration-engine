@@ -1,0 +1,21 @@
+plugins {
+    id 'java-library'
+}
+
+jar {
+    enabled = true
+}
+
+dependencies {
+    // Kafka (thin — just for annotations and auto-configuration)
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.springframework.boot:spring-boot-starter'
+
+    // MongoDB (for participant-side idempotency — optional at runtime)
+    compileOnly 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    // JSON
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

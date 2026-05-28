@@ -1,0 +1,108 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Saga rate by type and status",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "id": 1,
+      "targets": [
+        {"expr": "sum by (sagaType) (rate(saga_started_total[5m]))", "legendFormat": "started — {{sagaType}}", "refId": "A"},
+        {"expr": "sum by (sagaType) (rate(saga_completed_total[5m]))", "legendFormat": "completed — {{sagaType}}", "refId": "B"},
+        {"expr": "sum by (sagaType) (rate(saga_compensated_total[5m]))", "legendFormat": "compensated — {{sagaType}}", "refId": "C"},
+        {"expr": "sum by (sagaType) (rate(saga_suspended_total[5m]))", "legendFormat": "suspended — {{sagaType}}", "refId": "D"},
+        {"expr": "sum by (sagaType) (rate(saga_failed_total[5m]))", "legendFormat": "failed — {{sagaType}}", "refId": "E"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "right"}}
+    },
+    {
+      "title": "Step failure rate by step + failureType",
+      "type": "heatmap",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "id": 2,
+      "targets": [
+        {"expr": "sum by (stepName, failureType) (rate(saga_step_failed_total[5m]))", "legendFormat": "{{stepName}} ({{failureType}})", "refId": "A"}
+      ],
+      "options": {"calculate": false, "yAxis": {"axisPlacement": "left"}}
+    },
+    {
+      "title": "Saga duration p50 / p95 / p99",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "id": 3,
+      "targets": [
+        {"expr": "histogram_quantile(0.50, sum by (sagaType, le) (rate(saga_duration_seconds_bucket[5m])))", "legendFormat": "p50 — {{sagaType}}", "refId": "A"},
+        {"expr": "histogram_quantile(0.95, sum by (sagaType, le) (rate(saga_duration_seconds_bucket[5m])))", "legendFormat": "p95 — {{sagaType}}", "refId": "B"},
+        {"expr": "histogram_quantile(0.99, sum by (sagaType, le) (rate(saga_duration_seconds_bucket[5m])))", "legendFormat": "p99 — {{sagaType}}", "refId": "C"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []}
+    },
+    {
+      "title": "Step duration p50 / p95 / p99",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "id": 4,
+      "targets": [
+        {"expr": "histogram_quantile(0.50, sum by (stepName, le) (rate(saga_step_duration_seconds_bucket[5m])))", "legendFormat": "p50 — {{stepName}}", "refId": "A"},
+        {"expr": "histogram_quantile(0.95, sum by (stepName, le) (rate(saga_step_duration_seconds_bucket[5m])))", "legendFormat": "p95 — {{stepName}}", "refId": "B"},
+        {"expr": "histogram_quantile(0.99, sum by (stepName, le) (rate(saga_step_duration_seconds_bucket[5m])))", "legendFormat": "p99 — {{stepName}}", "refId": "C"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []}
+    },
+    {
+      "title": "Suspended sagas (current count by type)",
+      "type": "stat",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 16},
+      "id": 5,
+      "targets": [
+        {"expr": "sum by (sagaType) (saga_suspended_total - on (sagaType) (saga_compensated_total + saga_completed_total + saga_failed_total))", "legendFormat": "{{sagaType}}", "refId": "A"}
+      ],
+      "options": {"colorMode": "value", "graphMode": "area", "reduceOptions": {"calcs": ["lastNotNull"]}}
+    },
+    {
+      "title": "Step executions / sec",
+      "type": "timeseries",
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 16},
+      "id": 6,
+      "targets": [
+        {"expr": "sum by (sagaType, stepName) (rate(saga_step_executed_total[5m]))", "legendFormat": "{{sagaType}} / {{stepName}}", "refId": "A"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []}
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 38,
+  "tags": ["saga", "orchestrator"],
+  "templating": {
+    "list": [
+      {
+        "name": "DS_PROMETHEUS",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {"selected": true, "text": "Prometheus", "value": "PROMETHEUS"},
+        "hide": 0,
+        "label": "Datasource"
+      }
+    ]
+  },
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {},
+  "timezone": "",
+  "title": "Saga Orchestrator — Overview",
+  "uid": "saga-overview",
+  "version": 1,
+  "weekStart": ""
+}

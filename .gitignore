@@ -1,0 +1,26 @@
+.gradle/
+build/
+bin/
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+.idea/
+*.iml
+*.iws
+.DS_Store
+target/
+.env
+*.log
+.vscode/
+out/
+
+# Local-only scaffolding — not part of the published project.
+# The README is the single source of project-facing documentation; the design
+# rationale is folded into it. These planning/process artifacts stay local.
+CLAUDE.md
+stories/
+.github/
+docs/
+PROJECT-STATE.md
+CONTRIBUTING.md
+DoD.md

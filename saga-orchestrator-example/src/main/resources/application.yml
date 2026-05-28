@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: saga-orchestrator-example
+  # Engine wires its own Mongo + Kafka clients via MongoConfig / KafkaConfig.
+  # Spring Boot's defaults would conflict; exclude them here. (Cannot live on
+  # SagaOrchestratorAutoConfiguration itself — that's @AutoConfiguration, and
+  # re-enabling auto-config from within causes self-import.)
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+
+# Mongock migration scan — engine's bundled application.yml isn't loaded by
+# downstream consumers, so each consuming app must point Mongock at the
+# engine's migration package. Migrations live under com.anirudh.saga.core.migration.
+mongock:
+  migration-scan-package: com.anirudh.saga.core.migration
+  runner-type: initializingbean
+  transaction-enabled: false
+  throw-exception-if-cannot-obtain-lock: true
+
+# Expose the Prometheus scrape endpoint — engine's bundled yml has this too,
+# but Spring Boot only loads the topmost application.yml, so the consumer must
+# repeat it. Once P2-049 lands, CONTRIBUTING.md will explain this contract.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        saga.duration: true
+        saga.step.duration: true
+
+saga:
+  mongodb:
+    uri: mongodb://root:root@localhost:27117/saga?authSource=admin&replicaSet=rs0
+    database: saga
+  kafka:
+    bootstrap-servers: localhost:9192
+    consumer:
+      group-id: saga-orchestrator
+    listener:
+      concurrency: 1
+  timeout:
+    poll-interval-ms: 60000
+  outbox:
+    poll-interval-ms: 30000
+
+  # Participant validation — SDK fetches definitions from orchestrator at startup
+  orchestrator:
+    url: http://localhost:8080
+  participant:
+    strict-validation: true    # fail fast if module/action mismatch
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.anirudh.saga: DEBUG

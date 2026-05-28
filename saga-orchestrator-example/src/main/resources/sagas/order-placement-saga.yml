@@ -1,0 +1,36 @@
+name: order-placement-saga
+timeoutMinutes: 30
+lockTargetType: order
+lockTargetField: orderId
+steps:
+  - name: reserve-inventory
+    type: KAFKA
+    module: inventory
+    action: RESERVE_INVENTORY
+    compensationAction: RELEASE_INVENTORY
+    retryMaxAttempts: 3
+    timeoutSeconds: 30
+
+  - name: charge-payment
+    type: HTTP
+    action: CHARGE_PAYMENT
+    url: http://localhost:8080/payment/charge
+    compensationAction: REFUND_PAYMENT
+    compensationUrl: http://localhost:8080/payment/refund
+    retryMaxAttempts: 2
+    timeoutSeconds: 10
+
+  - name: schedule-shipment
+    type: KAFKA
+    module: shipment
+    action: SCHEDULE_SHIPMENT
+    compensationAction: CANCEL_SHIPMENT
+    retryMaxAttempts: 3
+    timeoutSeconds: 30
+
+  - name: confirm-order
+    type: KAFKA
+    module: order
+    action: CONFIRM_ORDER
+    retryMaxAttempts: 3
+    timeoutSeconds: 30

@@ -1,0 +1,17 @@
+# P2-067 — saga with a Kafka step that declares a fallback. Used by
+# StepFallbackIT to verify the engine applies the fallback (writes it into
+# context, advances to COMPLETED) instead of suspending when retries are
+# exhausted on a technical failure.
+name: it-fallback-saga
+timeoutMinutes: 30
+steps:
+  - name: it-fallback-step
+    type: KAFKA
+    module: it-fallback-noop
+    action: WILL_FAIL_TECHNICALLY
+    compensationAction: WILL_NEVER_COMPENSATE
+    retryMaxAttempts: 1
+    timeoutSeconds: 60
+    fallback:
+      addressId: "default-billing"
+      source: "fallback"

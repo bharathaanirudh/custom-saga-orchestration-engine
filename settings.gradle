@@ -1,0 +1,5 @@
+rootProject.name = 'saga-orchestration-engine'
+
+include 'saga-orchestrator-core'
+include 'saga-orchestrator-sdk'
+include 'saga-orchestrator-example'

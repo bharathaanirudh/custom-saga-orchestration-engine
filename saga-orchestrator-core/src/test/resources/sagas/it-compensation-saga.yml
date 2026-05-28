@@ -1,0 +1,29 @@
+# Test saga used by SagaCompensationIT (P2-003).
+# 3 Kafka steps with compensation actions — step 3 will be configured to fail
+# (BUSINESS) by the test, triggering reverse-order compensation of step 2 then step 1.
+name: it-compensation-saga
+timeoutMinutes: 5
+steps:
+  - name: it-comp-step-one
+    type: KAFKA
+    module: it-comp-one
+    action: ACT_ONE
+    compensationAction: UNDO_ONE
+    retryMaxAttempts: 3
+    timeoutSeconds: 10
+
+  - name: it-comp-step-two
+    type: KAFKA
+    module: it-comp-two
+    action: ACT_TWO
+    compensationAction: UNDO_TWO
+    retryMaxAttempts: 3
+    timeoutSeconds: 10
+
+  - name: it-comp-step-three
+    type: KAFKA
+    module: it-comp-three
+    action: ACT_THREE
+    compensationAction: UNDO_THREE
+    retryMaxAttempts: 3
+    timeoutSeconds: 10

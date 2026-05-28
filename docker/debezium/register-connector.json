@@ -1,0 +1,17 @@
+{
+  "name": "saga-outbox-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.mongodb.MongoDbConnector",
+    "mongodb.connection.string": "mongodb://root:root@saga-mongodb:27017/?replicaSet=rs0&authSource=admin",
+    "database.include.list": "saga",
+    "collection.include.list": "saga.saga_outbox",
+    "topic.prefix": "saga",
+    "transforms": "outbox",
+    "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+    "transforms.outbox.table.field.event.id": "_id",
+    "transforms.outbox.table.field.event.key": "sagaId",
+    "transforms.outbox.table.field.event.payload": "payload",
+    "transforms.outbox.route.by.field": "eventType",
+    "transforms.outbox.route.topic.replacement": "${routedByValue}"
+  }
+}

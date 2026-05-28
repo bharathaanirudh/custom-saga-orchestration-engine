@@ -1,0 +1,20 @@
+# Test saga used by SagaHappyPathIT (P2-002).
+# Two Kafka steps with retry+timeout populated to exercise P2-005/008.
+name: it-happy-path-saga
+timeoutMinutes: 5
+steps:
+  - name: it-step-one
+    type: KAFKA
+    module: it-module-one
+    action: ACT_ONE
+    compensationAction: UNDO_ONE
+    retryMaxAttempts: 3
+    timeoutSeconds: 10
+
+  - name: it-step-two
+    type: KAFKA
+    module: it-module-two
+    action: ACT_TWO
+    compensationAction: UNDO_TWO
+    retryMaxAttempts: 3
+    timeoutSeconds: 10

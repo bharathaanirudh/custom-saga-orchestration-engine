@@ -1,0 +1,21 @@
+# Test saga used by SagaIdempotencyIT (P2-004 idempotency half).
+# Mirror of the happy-path 2-step saga but on isolated topics so its participant
+# doesn't compete with SagaHappyPathIT's TestParticipant.
+name: it-idempotency-saga
+timeoutMinutes: 5
+steps:
+  - name: it-idem-step-one
+    type: KAFKA
+    module: it-idem-one
+    action: ACT_ONE
+    compensationAction: UNDO_ONE
+    retryMaxAttempts: 3
+    timeoutSeconds: 10
+
+  - name: it-idem-step-two
+    type: KAFKA
+    module: it-idem-two
+    action: ACT_TWO
+    compensationAction: UNDO_TWO
+    retryMaxAttempts: 3
+    timeoutSeconds: 10

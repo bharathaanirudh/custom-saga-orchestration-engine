@@ -1,0 +1,19 @@
+# P2-027 — target definition for time-machine replay ITs. Diverges from the
+# original recorded run (which had step-a + step-b): step-b is removed, step-c-new added.
+name: it-replay-target
+timeoutMinutes: 30
+steps:
+  - name: step-a
+    type: KAFKA
+    module: it-replay
+    action: STEP_A
+    compensationAction: UNDO_A
+    retryMaxAttempts: 1
+    timeoutSeconds: 30
+  - name: step-c-new
+    type: KAFKA
+    module: it-replay
+    action: STEP_C
+    compensationAction: UNDO_C
+    retryMaxAttempts: 1
+    timeoutSeconds: 30

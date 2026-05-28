@@ -1,0 +1,14 @@
+# P2-067 — companion saga to it-fallback-saga.yml without a fallback declared.
+# Used by StepFallbackIT to verify the legacy behavior is unchanged: when no
+# fallback is declared and a Kafka step's retries are exhausted, the saga
+# SUSPENDS (no silent regression).
+name: it-no-fallback-saga
+timeoutMinutes: 30
+steps:
+  - name: it-no-fallback-step
+    type: KAFKA
+    module: it-fallback-noop
+    action: WILL_FAIL_TECHNICALLY
+    compensationAction: WILL_NEVER_COMPENSATE
+    retryMaxAttempts: 1
+    timeoutSeconds: 60

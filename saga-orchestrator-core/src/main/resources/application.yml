@@ -1,0 +1,50 @@
+# Saga engine defaults — override in consuming service
+saga:
+  mongodb:
+    uri: mongodb://root:root@localhost:27117/saga?authSource=admin&replicaSet=rs0
+    database: saga
+  kafka:
+    bootstrap-servers: localhost:9192
+    consumer:
+      group-id: saga-orchestrator
+      dlt-group-id: saga-orchestrator-dlt
+    listener:
+      concurrency: 1
+    retry:
+      max-attempts: 3
+      initial-interval-ms: 1000
+      multiplier: 2.0
+  timeout:
+    poll-interval-ms: 10000
+  outbox:
+    poll-interval-ms: 30000
+    fallback-threshold-minutes: 5
+    publisher:
+      # See ADR-001-outbox-publisher-mode.md for trade-offs.
+      # DEBEZIUM_PRIMARY (default) | POLLER_ONLY
+      mode: DEBEZIUM_PRIMARY
+      retention-check: fail   # fail | warn | skip
+      max-saga-timeout-minutes: 60
+  metrics:
+    max-tag-cardinality: 100
+
+# Mongock — versioned schema migrations (P2-057). Migrations live under
+# com.anirudh.saga.core.migration; one @ChangeUnit per file.
+mongock:
+  migration-scan-package: com.anirudh.saga.core.migration
+  enabled: true
+  runner-type: initializingbean
+  transaction-enabled: false  # MongoDB transactions require replicaset; safer off for migrations
+  throw-exception-if-cannot-obtain-lock: true
+
+# Expose Prometheus scrape endpoint at /actuator/prometheus for metric collection.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        saga.duration: true
+        saga.step.duration: true

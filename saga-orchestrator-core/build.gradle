@@ -1,0 +1,69 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
+dependencies {
+    implementation project(':saga-orchestrator-sdk')
+
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // Micrometer Prometheus registry — exposes /actuator/prometheus for scraping.
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    // Mongock — versioned MongoDB schema migrations (P2-057 / E2-34).
+    implementation 'io.mongock:mongock-springboot-v3:5.5.0'
+    implementation 'io.mongock:mongodb-springdata-v4-driver:5.5.0'
+
+    // MongoDB
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    // Kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    // Resilience4j (present, disabled by default)
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.1.0'
+
+    // YAML parsing
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testImplementation 'org.testcontainers:mongodb'
+    testImplementation 'org.testcontainers:kafka'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
+}
+
+// Test split (path D in EXECUTION-PLAN §11):
+//   * `test`            — unit tests + InfrastructureSmokeIT. Fast, deterministic.
+//   * `integrationTest` — all Wave-3 ITs, each forked into its own JVM. Slow but
+//                          reliable. Each IT class is proven to pass in isolation;
+//                          they fail when ≥ 2 IT contexts coexist (cross-context
+//                          interference on shared Kafka/Mongo brokers — real engine
+//                          issue, fix is in scope of E2-12 multi-instance HA, v1.5).
+test {
+    // Default `test` runs unit tests only — fast feedback loop.
+    exclude '**/integration/*IT.class'
+}
+
+tasks.register('integrationTest', Test) {
+    group = 'verification'
+    description = 'Runs all integration tests, one per JVM fork (path D, EXECUTION-PLAN §11).'
+    useJUnitPlatform()
+    include '**/integration/*IT.class'
+    forkEvery = 1
+    maxParallelForks = 1
+    shouldRunAfter test
+}

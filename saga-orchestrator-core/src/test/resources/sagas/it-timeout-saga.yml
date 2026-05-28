@@ -1,0 +1,14 @@
+# Test saga used by SagaTimeoutIT (P2-004 timeout half).
+# Single Kafka step on a topic NO listener subscribes to — the step hangs after
+# dispatch, allowing the test to advance the clock past timeoutSeconds and observe
+# the StepTimeoutScheduler suspend the saga.
+name: it-timeout-saga
+timeoutMinutes: 30
+steps:
+  - name: it-timeout-step
+    type: KAFKA
+    module: it-timeout-noop
+    action: NEVER_REPLIED
+    compensationAction: NEVER_COMPENSATED
+    retryMaxAttempts: 3
+    timeoutSeconds: 10
